@@ -20,6 +20,7 @@
   import Prompts from "./Prompts.svelte";
   import Messages from "./Messages.svelte";
   import ChatRenameModal from "./ChatRenameModal.svelte";
+  import ChatSettingsModal from "./ChatSettingsModal.svelte";
 
   import { afterUpdate, onMount } from "svelte";
   import { replace } from "svelte-spa-router";
@@ -33,7 +34,7 @@
   let updating: boolean = false;
   let input: HTMLTextAreaElement;
   let settings: HTMLDivElement;
-  // let chatNameSettings: HTMLFormElement;
+  let settingsModalActive: boolean = false;
   let chatNameModalActive: boolean = false;
   let recognition: any = null;
   let recording = false;
@@ -345,9 +346,8 @@
   };
 
   const showSettings = async () => {
-    settings.classList.add("is-active");
+    settingsModalActive = true;
 
-    // Load available models from OpenAI
     const allModels = (await (
       await fetch(apiBase + "/v1/models", {
         method: "GET",
@@ -367,7 +367,7 @@
   };
 
   const closeSettings = () => {
-    settings.classList.remove("is-active");
+    settingsModalActive = false;
   };
 
   const clearSettings = () => {
@@ -498,69 +498,12 @@
   }}
 />
 
-<!-- svelte-ignore a11y-click-events-have-key-events -->
-<div class="modal" bind:this={settings}>
-  <div class="modal-background" on:click={closeSettings} />
-  <div class="modal-card">
-    <header class="modal-card-head">
-      <p class="modal-card-title">Settings</p>
-    </header>
-    <section class="modal-card-body">
-      <p class="notification is-warning">
-        Below are the settings that OpenAI allows to be changed for the API
-        calls. See the <a
-          href="https://platform.openai.com/docs/api-reference/chat/create"
-          >OpenAI API docs</a
-        > for more details.
-      </p>
-      {#each settingsMap as setting}
-        <div class="field is-horizontal">
-          <div class="field-label is-normal">
-            <label class="label" for="settings-{setting.key}"
-              >{setting.name}</label
-            >
-          </div>
-          <div class="field-body">
-            <div class="field">
-              {#if setting.type === "number"}
-                <input
-                  class="input"
-                  inputmode="decimal"
-                  type={setting.type}
-                  title={setting.title}
-                  id="settings-{setting.key}"
-                  min={setting.min}
-                  max={setting.max}
-                  step={setting.step}
-                  placeholder={String(setting.default)}
-                />
-              {:else if setting.type === "select"}
-                <div class="select">
-                  <select id="settings-{setting.key}" title={setting.title}>
-                    {#each setting.options as option}
-                      <option
-                        value={option}
-                        selected={option === setting.default}>{option}</option
-                      >
-                    {/each}
-                  </select>
-                </div>
-              {/if}
-            </div>
-          </div>
-        </div>
-      {/each}
-    </section>
-
-    <footer class="modal-card-foot">
-      <button class="button is-info" on:click={closeSettings}
-        >Close settings</button
-      >
-      <button class="button" on:click={clearSettings}>Clear settings</button>
-    </footer>
-  </div>
-</div>
-
+<ChatSettingsModal
+  bind:active={settingsModalActive}
+  {settingsMap}
+  on:close={closeSettings}
+  on:clear={clearSettings}
+/>
 <!-- rename modal -->
 <ChatRenameModal
   bind:active={chatNameModalActive}

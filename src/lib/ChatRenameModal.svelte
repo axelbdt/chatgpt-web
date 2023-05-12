@@ -4,10 +4,9 @@
   export let active = false;
   export let initialChatName = "";
 
+  const dispatch = createEventDispatcher();
   let localChatName = "";
   let chatNameInput: HTMLInputElement;
-
-  const dispatch = createEventDispatcher();
 
   const focusInput = () => {
     if (chatNameInput && active) {
